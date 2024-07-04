@@ -3,13 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TicketService } from '../ticket.service';
 import { TicketFormComponent } from '../ticket-form/ticket-form.component';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-ticket-list',
   standalone: true,
   imports: [CommonModule, FormsModule, TicketFormComponent],
   templateUrl: './ticket-list.component.html',
-  styleUrls: ['./ticket-list.component.css']
+  styleUrls: ['./ticket-list.component.css'],
+  animations: [
+    trigger('slideInOut', [
+      transition(':enter', [
+        style({ transform: 'translateY(-100%)' }),
+        animate('300ms ease-in', style({ transform: 'translateY(0%)' }))
+      ]),
+      transition(':leave', [
+        animate('300ms ease-in', style({ transform: 'translateY(-100%)' }))
+      ])
+    ])
+  ]
 })
 export class TicketListComponent implements OnInit {
   tickets: any[] = [];
@@ -25,6 +37,7 @@ export class TicketListComponent implements OnInit {
 
   showFilters = false;
   showModal = false;
+  showAddForm = false;
   selectedTicket: any = null;
 
   constructor(private ticketService: TicketService) { }
@@ -70,10 +83,15 @@ export class TicketListComponent implements OnInit {
 
   onTicketCreated(): void {
     this.loadTickets();
+    this.showAddForm = false;
   }
 
   toggleFilters(): void {
     this.showFilters = !this.showFilters;
+  }
+
+  toggleAddForm(): void {
+    this.showAddForm = !this.showAddForm;
   }
 
   openModal(ticket: any): void {

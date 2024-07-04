@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -22,36 +23,35 @@ export class TicketService {
   }
 
   createTicket(ticket: any): Observable<any> {
-    const ticketData = {
-      data: {
-        title: ticket.title,
-        description: ticket.description,
-        status: ticket.status,
-        active: true,
-        archived: false
-      }
-    };
-    return this.http.post(this.apiUrl, ticketData, { headers: this.getHeaders() });
+    return this.http.post(this.apiUrl, { data: ticket }, { headers: this.getHeaders() });
   }
 
-  updateTicketStatus(id: string, status: string): Observable<any> {
-    const ticketData = {
-      data: {
-        status: status
-      }
-    };
-    return this.http.put(`${this.apiUrl}/${id}`, ticketData, { headers: this.getHeaders() });
+  updateTicket(id: string, ticket: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, { data: ticket }, { headers: this.getHeaders() });
+  }
+
+  deleteTicket(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
   toggleTicketActive(id: string, isActive: boolean): Observable<any> {
-    const ticketData = {
-      data: {
-        active: isActive
-      }
-    };
-    return this.http.put(`${this.apiUrl}/${id}`, ticketData, { headers: this.getHeaders() });
+    return this.updateTicket(id, { active: isActive });
   }
-  deleteTicket(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+
+  updateTicketStatus(id: string, status: string): Observable<any> {
+    return this.updateTicket(id, { status: status });
+  }
+
+  isTitleUnique(title: string): Observable<boolean> {
+    return this.getAllTickets().pipe(
+      map(response => {
+        const tickets = response.data;
+        return !tickets.some((ticket: any) => ticket.attributes.title.toLowerCase() === title.toLowerCase());
+      }),
+      catchError(error => {
+        console.error('Error checking title uniqueness:', error);
+        return of(false);
+      })
+    );
   }
 }

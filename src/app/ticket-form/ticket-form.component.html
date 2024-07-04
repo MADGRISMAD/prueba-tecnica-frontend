@@ -1,5 +1,10 @@
 <form (ngSubmit)="onSubmit()" #ticketForm="ngForm" class="mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
   <h2 class="text-xl font-semibold mb-4 text-white">Create New Ticket</h2>
+
+  <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+    <span class="block sm:inline">{{ errorMessage }}</span>
+  </div>
+
   <div class="mb-4">
     <label for="title" class="block text-sm font-medium mb-1 text-white">Title</label>
     <input type="text" id="title" name="title" [(ngModel)]="ticket.title" required

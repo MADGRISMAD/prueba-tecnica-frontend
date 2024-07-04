@@ -1,0 +1,113 @@
+<div class="bg-gray-900 min-h-screen p-8">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-white mb-8">Ticket Management</h1>
+
+    <app-ticket-form (ticketCreated)="onTicketCreated()"></app-ticket-form>
+
+    <!-- Filtros -->
+    <div class="mb-8 relative">
+      <button (click)="toggleFilters()" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105">
+        Filters
+        <svg class="w-4 h-4 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+      </button>
+      <div *ngIf="showFilters" class="absolute mt-2 w-64 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+        <div class="p-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Filter Options</h3>
+          <div class="space-y-2">
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="filters.active" (change)="applyFilters()" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="ml-2 text-gray-700">Active</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="filters.inactive" (change)="applyFilters()" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="ml-2 text-gray-700">Inactive</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="filters.disponible" (change)="applyFilters()" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="ml-2 text-gray-700">Disponible</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="filters.agotado" (change)="applyFilters()" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="ml-2 text-gray-700">Agotado</span>
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" [(ngModel)]="filters.preventa" (change)="applyFilters()" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="ml-2 text-gray-700">Preventa</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Tickets -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div *ngFor="let ticket of filteredTickets" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden relative">
+        <!-- Botón de eliminar -->
+        <button (click)="deleteTicket(ticket.id)" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 focus:outline-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div class="p-6 flex flex-col h-full">
+          <div class="flex justify-between items-start mb-4">
+            <h2 class="text-xl font-semibold text-white truncate flex-1 mr-2">{{ ticket.attributes.title }}</h2>
+            <span [ngClass]="getStatusClass(ticket.attributes.status)" class="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+              {{ ticket.attributes.status || 'No status' }}
+            </span>
+          </div>
+          <p class="text-gray-400 mb-4 flex-grow">{{ ticket.attributes.description }}</p>
+          <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
+            <span class="truncate">ID: {{ ticket.id }}</span>
+            <span class="truncate ml-2">Created: {{ ticket.attributes.createdAt | date:'short' }}</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span [ngClass]="ticket.attributes.active ? 'text-green-500' : 'text-red-500'" class="font-semibold">
+              {{ ticket.attributes.active ? 'Active' : 'Inactive' }}
+            </span>
+            <button (click)="openModal(ticket)" class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm px-4 py-2 text-center">
+              Actions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="showModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Actions for Ticket</h3>
+          <div class="mt-2 px-7 py-3">
+            <p class="text-sm text-gray-500">
+              ID: {{ selectedTicket.id }}<br>
+              Title: {{ selectedTicket.attributes.title }}
+            </p>
+          </div>
+          <div class="items-center px-4 py-3">
+            <button (click)="toggleTicketActive(selectedTicket.id, selectedTicket.attributes.active)"
+                    class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 mb-2">
+              {{ selectedTicket.attributes.active ? 'Deactivate' : 'Activate' }}
+            </button>
+            <button (click)="updateTicketStatus(selectedTicket.id, 'Disponible')"
+                    class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300 mb-2">
+              Set as Disponible
+            </button>
+            <button (click)="updateTicketStatus(selectedTicket.id, 'Agotado')"
+                    class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 mb-2">
+              Set as Agotado
+            </button>
+            <button (click)="updateTicketStatus(selectedTicket.id, 'Preventa')"
+                    class="px-4 py-2 bg-yellow-500 text-black text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 mb-2">
+              Set as Preventa
+            </button>
+            <button (click)="closeModal()"
+                    class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

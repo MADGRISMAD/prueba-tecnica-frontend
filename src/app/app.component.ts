@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TicketListComponent } from './ticket-list/ticket-list.component';
+import { TicketFormComponent } from './ticket-form/ticket-form.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [CommonModule, TicketListComponent, TicketFormComponent],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'prueba-tecnica-frontend';
+  title = 'Ticket Management System';
 }
